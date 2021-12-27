@@ -21,7 +21,7 @@ const getDataImageItem = async(url) =>{
     });
     return await items.join("##");
 };
-var arrayListe =[];
+
 
 const getData = async (url)=>{
 
@@ -36,68 +36,44 @@ data  = await data.data;
 
 const $ = cherrio.load(data);
 
-$("ul.products li.product").each(async (__,v) =>{
-    
-    let lien  = $(v).find('a').attr('href') || "";
-        
+
+var dataX = [];
+for(var i=0;i< $("ul.products li.product").length;i++)
+{   
+    let v = $("ul.products li.product")[i];
+         let lien  = $(v).find('a').attr('href') || "";
+        let images = await getDataImageItem(lien);
     let dataImages = {
         image_principal:$(v).find('.product-thumbnail img').attr('src'),
         title:$(v).find('.woocommerce-loop-product__title').text(),
         price:$(v).find('ins .amount').text().length > 0 ? $(v).find('ins .amount').text() : $(v).find(".amount").text(),
         lien,
+        images:images,
     };
 
+    console.log(dataImages);
+    dataX.push(dataImages);
+}
 
-    //  if(lien.length > 0)
-    // {
-    //     let items =  await getDataImageItem(lien);
-    //     dataImages.images = items;
-
-    // }
-    
-
-     
-        arrayListe.push(dataImages);
+return dataX;
 
 
-    
-
-
-});
-
-
-
-
-return await arrayListe;
 };
-
-let name = "";
-let itemData = arrayLink[1];
-    name=itemData.split("/");
+(async()=>{
+    for(var x = 0;x<=arrayLink.length;x++)
+{       let name=arrayLink[x].split("/");
     name = (name[name.length - 2])
     arrayListe = [];
-    
-    getData(itemData).then(async function(){
-        console.log("Start scrapping with images "+ itemData);
-        console.log(name,arrayListe)
-        for(let [index,item] of arrayListe.entries())
-        {
-        
-            let images = await getDataImageItem(item.lien);
-           
-            arrayListe[index].images = images;
-        }
-        converter.json2csv(arrayListe, (err, csv) => {
+    var arrayListe =  await getData(arrayLink[x]);
+     converter.json2csv(arrayListe, (err, csv) => {
             if (err) {
                 throw err;
             }
         
             // print CSV string
-           console.log(`Csv file  of  ${name} is ${csv}`);
             fs.writeFileSync(name+'.csv', csv);
         });
-    });
+    
+}})()
 
-
-
-console.log("done");
+console.log("Done Good Luck")
